@@ -3,12 +3,12 @@
 /**
  * PHP Proxy Client
  *
- * Version 1.1.2
+ * Version 1.1.3 by GISCON Geoinformatik GmbH, Dortmund, Germany
  * See https://github.com/Esri/resource-proxy for more information.
  *
  */
 
-$version = "1.1.2";
+$version = "1.1.3";
 
 error_reporting(0);
 
@@ -222,6 +222,22 @@ class Proxy {
 
     public $contentLength;
 
+    /**
+     * Holds configuration for an proxy-server
+     * 
+     * @var string
+     */
+
+    public $proxyServer;
+
+
+    /**
+     * Holds user and password for the proxy-server
+     * 
+     * @var string
+     */
+
+     public $proxyServerAuth;
 
 
     public function __construct($configuration, $log) {
@@ -232,6 +248,16 @@ class Proxy {
         $this->proxyConfig = $configuration->proxyConfig;
 
         $this->serverUrls = $configuration->serverUrls;
+
+        if (isset($configuration->proxyServer['ipV4']) && isset($configuration->proxyServer['port'] ))
+        {
+            $this->proxyServer = $configuration->proxyServer['ipV4'] + ':' + $configuration->proxyServer['port'];
+        }
+
+        if (isset($configuration->proxyServer['user']) && isset($configuration->proxyServer['password'] ))
+        {
+            $this->proxyServerAuth = $configuration->proxyServer['user'] + ':' + $configuration->proxyServer['password'];
+        }
 
         $this->setupSession();
 
@@ -1011,6 +1037,15 @@ class Proxy {
 
         curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true);
 
+        if (isset($this->proxyServer) )
+        {
+            curl_setopt($this->ch, CURLOPT_PROXY, $this->proxyServer);              // PROXY details with port
+        }
+
+        if (isset($this->proxyServerAuth) ) 
+        {
+            curl_setopt($this->ch, CURLOPT_PROXYUSERPWD, $this->proxyServerAuth);   // Use if proxy have username and password
+        }
     }
 
     public function curlError()
@@ -2851,3 +2886,4 @@ $proxyObject = new Proxy($proxyConfig, $proxyLog);
 
 $proxyObject->getResponse();
 
+?>
